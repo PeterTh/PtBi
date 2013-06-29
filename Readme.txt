@@ -54,6 +54,12 @@ makes no sense).
 PtBi should be run in the "run" folder, which contains
 the files required during execution.
 
+License
+=======
+All the source code is released under the conditions of 
+the GPLv3, except for the dependencies listed above,
+which have their own licensing terms
+
 Contact
 =======
 

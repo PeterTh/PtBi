@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DeckLinkAPI_i.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="keys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PtBi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PtOpenGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stuff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="version.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScalingManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AAManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IPManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Capture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GLFragmentProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GLRenderTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PtOpenGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResHandling.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stuff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GLMultiRenderTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GLUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScalingManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AAManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IPManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeckLinkAPI_h.h_bak">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\run\shaders\calc_smoothness.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\fxaa_pass.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\generate_lanczos_lut.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\scale_awesome.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\scale_awesome_backup.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\scale_awesome_backup2.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\scale_lanczos_adaptive.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\scale_lanczos_static.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\uyvy_to_rgb.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\uyvy_to_rgb_smooth.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\init_aa_predicate.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\fill_aa_predicate_h.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\fill_aa_predicate_v.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\fill_aa_predicate_ext.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\apply_aa_predicate.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\extend_aa_predicate.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\apply_aa_predicate_temp.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\keys.ini">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\local_contrast_gather.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\local_contrast_apply.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\startup.ini">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\stuff\icon32.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\run\shaders\gamma.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PtBi.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="C:\dev\blackmagic\Blackmagic DeckLink SDK 9.7\Win\include\DeckLinkAPI.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+  </ItemGroup>
+</Project>

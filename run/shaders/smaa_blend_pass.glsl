@@ -1,4 +1,3 @@
-#version 410 compatibility
 #define SMAA_GLSL_4 1
 #define SMAA_PRESET_ULTRA 1
 #define SMAA_PIXEL_SIZE float2(1.0 / FRAME_WIDTH, 1.0 / FRAME_HEIGHT)

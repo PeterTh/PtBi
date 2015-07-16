@@ -14,7 +14,7 @@ General Notes
 
 This is not a particularly clean project, it was
 never really intended for public release and has
-been developed over almost 6 years now. Some of
+been developed over more than 6 years now. Some of
 the code is even older and hijacked from other
 projects, so I'd appreciate not drawing too many
 conclusions about my development skills/style from

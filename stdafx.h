@@ -32,16 +32,23 @@ struct RTAssertException : public std::runtime_error {
 	RTAssertException() : std::runtime_error("RT Assertion failed.") { }
 };
 
+static inline void showErrorString(std::string s) {
+	ofstream log("error.log");
+	log << s;
+	log.close();
+	std::cerr << s;
+	wchar_t wtext[256];
+	mbstowcs(wtext, s.c_str(), strlen(s.c_str()) + 1);
+	MessageBox(NULL, wtext, L"PtBi Error", MB_ICONERROR | MB_OK);
+}
+
 #define RT_ASSERT(checkexp, message) { \
 	bool cval = (checkexp); \
 	if(!cval) { \
 	std::stringstream ss; \
 	ss << "Runtime assertion failed in " << __FILE__ << " on line " << __LINE__ \
 	   << "\n# Check: " << #checkexp << "\n# Message: " << message << "\n"; \
-	ofstream log("error.log"); \
-	log << ss.str(); \
-	log.close(); \
-	std::cerr << ss.str(); \
+	showErrorString(ss.str()); \
 	throw new RTAssertException(); } }
 
 #define RT_GL_ASSERT(message) { \
@@ -50,10 +57,7 @@ struct RTAssertException : public std::runtime_error {
 	std::stringstream ss; \
 	ss << "Runtime GL assertion failed in " << __FILE__ << " on line " << __LINE__ \
 	   << "\n# OpenGL error string: " << gluErrorString(err) << "\n# Message: " << message << "\n"; \
-	ofstream log("error.log"); \
-	log << ss.str(); \
-	log.close(); \
-	std::cerr << ss.str(); \
+	showErrorString(ss.str()); \
 	throw new RTAssertException(); } }
 
 

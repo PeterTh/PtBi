@@ -6,6 +6,7 @@
 #include "PtOpenGL.h"
 #include "IPManager.h"
 #include "Audio.h"
+#include "Console.h"
 
 namespace {
 	int glfwStrToKey(string str) {
@@ -170,6 +171,8 @@ void KeyBinding::performAction(string action) {
 		pres->resizeTo(decodeIntParam(action));
 	} else if(action == "switchAspect") {
 		pres->switchAspect();
+	} else if(action == "toggleStatistics") {
+		Console::get().toggleStatics();
 	} 
 	// image processing
 	else if(action == "toggleLocalContrast") {

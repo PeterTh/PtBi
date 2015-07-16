@@ -60,6 +60,12 @@ public:
 		sum /= interval;
 		return sum;
 	}
+	
+	double getMax() {
+		double max = 0;
+		for(unsigned i=0; i<interval; ++i) { max = max(max, vals[i]); }
+		return max;
+	}
 
 	bool justFilled() {
 		return filled;

@@ -6,17 +6,18 @@
 GLPresenter* GLPresenter::self = NULL;
 
 GLPresenter::GLPresenter(DeckLinkCapture &capture, int w, int h, int hz) : 
-	data_size(w*h*2),
+	data_size(w*h*capture.getBytesPerPixel()),
 	capture(capture), running(true), fullscreen(false), useVsync(false), rgbFull(false),
 	texId(0), displayList(0), 
-	convertUYVY(NULL),
+	initialConvert(NULL),
 	buffer(NULL), buffer2(NULL),
-	reqW(w), reqH(h), reqHz(hz), 
-	frameIndex(0), drawnFrameIndex(0), aspect(16.0/9.0), oneToNScaleFactor(-1.0)
+	reqW(w), reqH(h), reqHz(hz), captureBufferW(reqW / (4 / capture.getBytesPerPixel())),
+	frameIndex(0), drawnFrameIndex(0), aspect(16.0/9.0), oneToNScaleFactor(-1.0),
+	frameProcTimes(300)
 {
 	self = this;
 
-	sprintf(prepend, "#define FRAME_WIDTH %d\n#define FRAME_HEIGHT %d\n", reqW, reqH);
+	sprintf(prepend, "#version 410 compatibility \n#define FRAME_WIDTH %d \n#define FRAME_HEIGHT %d \n", reqW, reqH);
 
 	RT_ASSERT(glfwInit() == GL_TRUE, "Failed to initalize GLFW.");
 	RT_ASSERT(glfwOpenWindow(w, h, 0, 0, 0, 0, 0, 0, GLFW_WINDOW) == GL_TRUE, "Failed to open GLFW window.");
@@ -46,7 +47,19 @@ GLPresenter::GLPresenter(DeckLinkCapture &capture, int w, int h, int hz) :
 
 	initGL();
 
-	convertUYVY = new GLFragmentProgram("shaders/uyvy_to_rgb_smooth.glsl", getShaderPrependString());
+	switch(capture.getPixelFormat()) {
+	case CapturePixelFormat::YUV: 
+		initialConvert = new GLFragmentProgram("shaders/uyvy_to_rgb_smooth.glsl", getShaderPrependString());
+		break;
+	case CapturePixelFormat::ARGB8:
+		initialConvert = new GLFragmentProgram("shaders/argb_input.glsl", getShaderPrependString());
+		break;
+	case CapturePixelFormat::BGRA8:
+		initialConvert = new GLFragmentProgram("shaders/bgra_input.glsl", getShaderPrependString());
+		break;
+	default:
+		RT_ASSERT(false, "Unsupported pixel type.");
+	}
 
 	buffer = new GLRenderTexture(getW(), getH(), GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
 	buffer->setFilterMode(GL_LINEAR);
@@ -64,6 +77,9 @@ GLPresenter::GLPresenter(DeckLinkCapture &capture, int w, int h, int hz) :
 	RT_GL_ASSERT("Error during GL initialization.");
 
 	reshape(reqW, reqH);
+	
+	graphicsReportText = std::make_shared<StaticText>("", 25.0f,440.0f);
+	Console::get().add(graphicsReportText);
 }
 
 const GLcharARB* GLPresenter::getShaderPrependString()
@@ -77,33 +93,41 @@ bool GLPresenter::run()
 		return false;
 	}
 	if(frameIndex > drawnFrameIndex) {
+		Timer t;
 		glBindTexture(GL_TEXTURE_2D, texId);
 		drawnFrameIndex = frameIndex;
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, reqW/2, reqH, GL_ABGR_EXT, GL_UNSIGNED_BYTE, dataPointers[drawnFrameIndex%2]);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, captureBufferW, reqH, GL_ABGR_EXT, GL_UNSIGNED_BYTE, dataPointers[drawnFrameIndex % 2]);
 		NONRELEASE( RT_GL_ASSERT("Error uploading frame data.") );
 
 		// convert UYVY
 		buffer->makeCurrent();
-		convertUYVY->use();
+		initialConvert->use();
 		glutil::drawQuad();
-		convertUYVY->stopUsing();
+		initialConvert->stopUsing();
 		buffer->releaseCurrent();
 		// apply AA
 		aaManager->applyAA(buffer, buffer2);
 		// apply IP
 		ipManager->applyIP(buffer2, buffer);	
 		display();
+
+		// statistics
+		frameProcTimes.add(t.elapsed()/1000.0);
+		graphicsReportText->text = format("Frame processing time (CPU): \n% 6.2lf ms avg, % 6.2lf ms max", frameProcTimes.get(), frameProcTimes.getMax());
 	}
 	glfwPollEvents();
-	if(clock()>cursorTimeout) {
-		if(GetFocus() == hwnd) glfwDisable(GLFW_MOUSE_CURSOR);
-	} else {
-		glfwEnable(GLFW_MOUSE_CURSOR);
+
+	if(GetFocus() == hwnd) {
+		if(clock()>cursorTimeout) {
+			glfwDisable(GLFW_MOUSE_CURSOR);
+		} else {
+			glfwEnable(GLFW_MOUSE_CURSOR);
+		}
 	}
 	return true;
 }
 
-void GLPresenter::frameRecieved( void* data )
+void GLPresenter::frameRecieved(void* data)
 {
 	if(!running) return;
 	unsigned ni = (frameIndex+1)%2;
@@ -122,7 +146,7 @@ void GLPresenter::switchFullscreen()
 	} else {
 		glfwGetWindowSize(&fsww, &fswh);
 		GetWindowRect(hwnd, &windowRect);
-		SetWindowLongPtr(hwnd, GWL_STYLE, WS_SYSMENU | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE);
+		SetWindowLongPtr(hwnd, GWL_STYLE, WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE);
 		int w = GetSystemMetrics(SM_CXSCREEN), h = GetSystemMetrics(SM_CYSCREEN);
 		MoveWindow(hwnd, 0, 0, w, h, TRUE);
 		reshape(w, h);
@@ -135,13 +159,24 @@ void GLPresenter::toggleRGBRange()
 {
 	rgbFull = !rgbFull;
 	if(rgbFull) {
-		convertUYVY->setParameter("lowB", 0.0f);
-		convertUYVY->setParameter("scale1", 1.0f);
-		convertUYVY->setParameter("scale2", 1.0f);
-	} else {
-		convertUYVY->setParameter("lowB", 16.0f/255.0f);
-		convertUYVY->setParameter("scale1", 255.0f/(235.0f-16.0f));
-		convertUYVY->setParameter("scale2", 255.0f/(240.0f-16.0f));
+		if(capture.isYUV()) {
+			initialConvert->setParameter("lowB", 5.0f / 255.0f);
+			initialConvert->setParameter("scale1", 255.0f / (250.0f - 5.0f));
+			initialConvert->setParameter("scale2", 255.0f / (255.0f - 5.0f));
+		}
+		else {
+			initialConvert->setParameter("fullRange", 1);
+		}
+	}
+	else {
+		if(capture.isYUV()) {
+			initialConvert->setParameter("lowB", 16.0f / 255.0f);
+			initialConvert->setParameter("scale1", 255.0f / (235.0f - 16.0f));
+			initialConvert->setParameter("scale2", 255.0f / (240.0f - 16.0f));
+		}
+		else {
+			initialConvert->setParameter("fullRange", 0);
+		}
 	}
 	Console::get().add(rgbFull ? "Full range RGB mode" : "Limited range RGB mode");
 }
@@ -150,6 +185,8 @@ void GLPresenter::initGL()
 {
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_SCISSOR_TEST);
 	glEnable(GL_TEXTURE_2D);
 
 	glViewport(0, 0, getW(), getH());
@@ -162,7 +199,7 @@ void GLPresenter::initGL()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
 	GLubyte* data = (GLubyte*)new GLubyte[data_size];
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, reqW/2, reqH, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, captureBufferW, reqH, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)data);
 	delete data;
 }
 
@@ -220,7 +257,7 @@ void GLPresenter::close()
 	if(scalingManager) delete scalingManager;
 	if(buffer) delete buffer;
 	if(buffer2) delete buffer2;
-	if(convertUYVY) delete convertUYVY;
+	if(initialConvert) delete initialConvert;
 	if(texId) glDeleteTextures(1, &texId);
 	wcout << "OpenGL shutdown finished...\n";
 }

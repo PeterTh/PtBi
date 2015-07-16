@@ -47,14 +47,14 @@
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\dev\libav\win32\usr\include;C:\dev\a52dec\include;C:\dev\libdca\include;C:\dev\bass\c;C:\dev\DevIL\include;C:\dev\glfw\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\dev\libav\win32\usr\include;C:\dev\boost\boost_1_55_0;C:\dev\a52dec\include;C:\dev\libdca\include;C:\dev\bass\c;C:\dev\DevIL\include;C:\dev\glfw\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\dev\libav\win32\usr\bin;C:\dev\a52dec\lib;C:\dev\libdca\lib;C:\dev\bass\c;C:\dev\glfw\lib-msvc100;C:\dev\DevIL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\dev\libav\win32\usr\include;C:\dev\a52dec\include;C:\dev\libdca\include;C:\dev\bass\c;C:\dev\DevIL\include;C:\dev\glfw\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\dev\libav\win32\usr\include;C:\dev\boost\boost_1_55_0;C:\dev\a52dec\include;C:\dev\libdca\include;C:\dev\bass\c;C:\dev\DevIL\include;C:\dev\glfw\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\dev\libav\win32\usr\bin;C:\dev\a52dec\lib;C:\dev\libdca\lib;C:\dev\bass\c;C:\dev\glfw\lib-msvc100;C:\dev\DevIL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -70,6 +70,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>liba52.lib;libdca.lib;bass.lib;opengl32.lib;glu32.lib;glew32.lib;DevIL.lib;GLFW.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -102,6 +103,8 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>liba52.lib;libdca.lib;bass.lib;opengl32.lib;glu32.lib;glew32.lib;DevIL.lib;GLFW.lib;%(AdditionalDependencies)</AdditionalDependencies>

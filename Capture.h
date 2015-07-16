@@ -13,12 +13,17 @@ struct AudioListener {
 	virtual void packetRecieved(long samples, void* data) = 0;
 };
 
+enum class CapturePixelFormat {
+	YUV, ARGB8, BGRA8
+};
+
 class DeckLinkCapture : public IDeckLinkInputCallback {
 	static const unsigned maxBuffers = 3;
 
 	IDeckLinkIterator* pDeckLinkIterator;
 	IDeckLink* pDeckLink;
 	BSTR modelName;
+	CapturePixelFormat pf;
 	IDeckLinkInput* pDeckLinkInput;
 	bool streaming, disableAudio;
 	FrameListener *displayListener, *consumeListener;
@@ -48,8 +53,19 @@ class DeckLinkCapture : public IDeckLinkInputCallback {
 		}
 	}
 
+	const char* getPixelFormatString(_BMDPixelFormat pf) {
+		switch(pf) {
+		case bmdFormat8BitYUV: return "8 bit YUV";
+		case bmdFormat10BitYUV: return "10 bit YUV";
+		case bmdFormat8BitARGB: return "8 bit ARGB";
+		case bmdFormat8BitBGRA: return "8 bit BGRA";
+		case bmdFormat10BitRGB: return "10 bit RGB";
+		default: return "UNKNOWN PIXEL FORMAT";
+		}
+	}
+
 public:
-	DeckLinkCapture(_BMDDisplayMode mode, bool disableAudio) : pDeckLinkIterator(NULL), pDeckLink(NULL), pDeckLinkInput(NULL), 
+	DeckLinkCapture(_BMDDisplayMode mode, _BMDPixelFormat format, bool disableAudio) : pDeckLinkIterator(NULL), pDeckLink(NULL), pDeckLinkInput(NULL),
 		displayListener(NULL), consumeListener(NULL), audioListener(NULL), streaming(false), disableAudio(disableAudio) {
 		try {
 			CoCreateInstance(CLSID_CDeckLinkIterator, NULL, CLSCTX_ALL, IID_IDeckLinkIterator, (void**)&pDeckLinkIterator);
@@ -61,13 +77,20 @@ public:
 				"Failed to get DeckLink video input interface.");
 
 			BMDDisplayModeSupport support = bmdDisplayModeNotSupported;
-			RT_ASSERT(pDeckLinkInput->DoesSupportVideoMode(mode, bmdFormat8BitYUV, bmdVideoInputFlagDefault, &support, NULL) 
+			RT_ASSERT(pDeckLinkInput->DoesSupportVideoMode(mode, format, bmdVideoInputFlagDefault, &support, NULL)
 				== S_OK, "Failed querying display mode support.");
 			RT_ASSERT(support != bmdDisplayModeNotSupported, "Requested display mode not supported.");
-			wcout << "Display mode " << getModeString(mode) << ", 8 bit YUV supported."
+			wcout << "Display mode " << getModeString(mode) << ", " << getPixelFormatString(format) << " supported."
 			      << ((support == bmdDisplayModeSupportedWithConversion) ? " (with conversion)" : "") << ".\n";
-			RT_ASSERT(pDeckLinkInput->EnableVideoInput(mode, bmdFormat8BitYUV, bmdVideoInputFlagDefault) == S_OK,
+			RT_ASSERT(pDeckLinkInput->EnableVideoInput(mode, format, bmdVideoInputFlagDefault) == S_OK,
 				"Failed to enable video input.");
+
+			switch(format) {
+			case bmdFormat8BitARGB: pf = CapturePixelFormat::ARGB8; break;
+			case bmdFormat8BitBGRA: pf = CapturePixelFormat::BGRA8; break;
+			case bmdFormat8BitYUV: pf = CapturePixelFormat::YUV; break;
+			default: RT_ASSERT(false, "Unsupported pixel format");
+			}
 
 			if(!disableAudio) {
 				RT_ASSERT(pDeckLinkInput->EnableAudioInput(bmdAudioSampleRate48kHz, bmdAudioSampleType16bitInteger, 2) == S_OK,
@@ -168,4 +191,17 @@ public:
 		Sleep(100);
 		safeRelease();
 	}
+
+	int getBytesPerPixel() {
+		return pf == CapturePixelFormat::YUV ? 2 : 4;
+	}
+
+	bool isYUV() {
+		return pf == CapturePixelFormat::YUV;
+	}
+
+	CapturePixelFormat getPixelFormat() {
+		return pf;
+	}
+
 };

@@ -41,11 +41,12 @@ int main(int argc, char* argv[])
 	KeepDisplayOn on;
 
 	// parse arguments
-	_BMDDisplayMode mode = bmdModeHD720p5994;
+	BMDDisplayMode mode = bmdModeHD720p5994;
+	BMDPixelFormat format = bmdFormat8BitYUV;
 	bool disableAudio = false;
 	int w = 1280, h = 720, hz = 59;
 	for(int i=1; i<argc; ++i) {
-		if(strstr(argv[i], "-mode=") == argv[1]) {
+		if(strstr(argv[i], "-mode=") == argv[i]) {
 			if(strstr(argv[i], "720p60")) {
 				mode = bmdModeHD720p60;
 				w = 1280; h = 720; hz = 60;
@@ -87,14 +88,26 @@ int main(int argc, char* argv[])
 				w = 720; h = 480; hz = 59;
 			}
 			else RT_ASSERT(false, "Unknown capture mode.");
-		} else if(strstr(argv[i], "-disable-audio") == argv[1]) {
+		} else if(strstr(argv[i], "-pf=") == argv[i]) {
+			if(strstr(argv[i], "YUV")) {
+				format = bmdFormat8BitYUV;
+			}
+			else if(strstr(argv[i], "ARGB")) {
+				format = bmdFormat8BitARGB;
+			}
+			else if(strstr(argv[i], "BGRA")) {
+				format = bmdFormat8BitBGRA;
+			}
+			else RT_ASSERT(false, "Unknown pixel format.");
+		}
+		else if(strstr(argv[i], "-disable-audio") == argv[i]) {
 			disableAudio = true;
 		} else {
 			RT_ASSERT(false, "Unknown argument: " << argv[i]);
 		}
 	}
 
-	DeckLinkCapture capturer(mode, disableAudio);
+	DeckLinkCapture capturer(mode, format, disableAudio);
 	{ // block to make sure presenter is destroyed before capturer
 		AudioRenderer renderer(capturer, 2);
 		GLPresenter presenter(capturer, w, h, hz);

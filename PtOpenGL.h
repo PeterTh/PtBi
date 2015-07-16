@@ -32,7 +32,7 @@ class GLPresenter : public FrameListener {
 	GLuint texId;
 	GLuint displayList;
 
-	GLFragmentProgram *convertUYVY;
+	GLFragmentProgram *initialConvert;
 	GLRenderTexture *buffer, *buffer2;
 	ScalingManager *scalingManager;
 	AAManager *aaManager;
@@ -47,12 +47,15 @@ class GLPresenter : public FrameListener {
 	double aspect, oneToNScaleFactor;
 	bool running, fullscreen, useVsync, rgbFull;
 	clock_t cursorTimeout;
-	int reqW, reqH, reqHz, wSizeW, wSizeH;
+	int reqW, reqH, reqHz, wSizeW, wSizeH, captureBufferW;
 
 	void *dataPointers[2];
 	volatile unsigned long long frameIndex, drawnFrameIndex;
 
 	GLcharARB prepend[512];
+	
+	StaticTextPtr graphicsReportText;
+	SlidingAverage frameProcTimes;
 
 public:
 	GLPresenter(DeckLinkCapture &capture, int w, int h, int hz);

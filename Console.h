@@ -1,8 +1,14 @@
 #pragma once
 
 #include "stdafx.h"
+#include <memory>
 
 #include "Timer.h"
+
+namespace font {
+	typedef std::pair<float,float> position;
+	position print(float x, float y, const char *text, bool measure = false);
+}
 
 class ConsoleLine {
 	Timer t;
@@ -16,15 +22,29 @@ public:
 	float draw(float y);
 };
 
+struct StaticText {
+	string text;
+	float x, y;
+
+	StaticText(string text, float x, float y) 
+		: text(text), x(x), y(y) {
+
+	}
+};
+
+typedef std::shared_ptr<StaticText> StaticTextPtr;
+
 class Console {
 	static Console* self;
-
+	
 	vector<ConsoleLine> lines;
+	vector<StaticTextPtr> statics;
 	int start, width, height;
 	float lineHeight;
+	bool showStatics;
 
 public:
-	Console() : start(0) {
+	Console() : start(0), showStatics(false) {
 	}
 
 	static Console& get() { 
@@ -36,33 +56,11 @@ public:
 		lines.push_back(ConsoleLine(msg));
 	}
 
-	void draw() {
-		if(lineHeight > 0.0f) {
-			glEnable(GL_BLEND);
-			glBegin(GL_QUADS);
-			glColor4d(0.0,0.0,0.0,0.4);
-			glVertex2d(-1.0, 1.0);
-			glVertex2d( 1.0, 1.0);
-			glVertex2d( 1.0, 1.0-lineHeight/height);
-			glVertex2d(-1.0, 1.0-lineHeight/height);
-			glColor4d(1.0,1.0,1.0,1.0);
-			glEnd();
-			glDisable(GL_BLEND);
-		}
-		float y = 0.0f;
-		// maximum: 5 lines
-		if(lines.size()-start > 5) start += lines.size()-start-5; 
-		for(size_t i=start; i<lines.size(); ++i) {
-			float ret = lines[i].draw(y);
-			if(ret == 0.0f) start = i+1; // if text timed out increase start
-			else y = ret + 2.0f;
-		}
-		if(y == 0.0f) {
-			if(lineHeight>0.2f) lineHeight *= 0.6f;
-			else lineHeight = 0.0f;
-		}
-		else lineHeight = y + 10.0f;
+	void add(StaticTextPtr text) {
+		statics.push_back(text);
 	}
+
+	void draw();
 
 	void setSize(int w, int h) {
 		width = w;
@@ -71,4 +69,6 @@ public:
 
 	int getW() { return width; }
 	int getH() { return height; }
+
+	void toggleStatics() { showStatics = !showStatics; }
 };

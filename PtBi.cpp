@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 	// redirect stdout
 	freopen("ptbi.log", "w+", stdout);
 
-	RT_ASSERT(SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS) == TRUE, "Could not set high process priority.");
+	RT_ASSERT(SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == TRUE, "Could not set high process priority.");
 
 	RT_ASSERT(CoInitializeEx(NULL, COINIT_MULTITHREADED) == S_OK, "Failed to initialize COM in MT mode.");
 

@@ -6,8 +6,8 @@
 #define AUDIO_HZ 48000
 
 #define AUDIO_BUF_UNDERRUN_LIMIT 6000
-#define AUDIO_BUF_UNDERRUN_LIMIT_F 1000
-#define AUDIO_BUF_OVERRUN_LIMIT 8000
+#define AUDIO_BUF_UNDERRUN_LIMIT_F 250
+#define AUDIO_BUF_OVERRUN_LIMIT 7000
 
 
 AudioRenderer* AudioRenderer::singleton = NULL;
@@ -18,14 +18,20 @@ AudioRenderer::AudioRenderer(DeckLinkCapture &capture, unsigned channels) :
 	dcaState(NULL), a52State(NULL)
 {
 	// BASS init
+	BASS_SetConfig(BASS_CONFIG_BUFFER, 1000);
+	BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 0);
+	BASS_SetConfig(BASS_CONFIG_UPDATETHREADS, 0);
 	RT_ASSERT(BASS_Init(-1, AUDIO_HZ, /*flags*/0, /*window*/0, /*device*/NULL) == TRUE, "Failed to initialize BASS audio library");
 	bStream = BASS_StreamCreate(AUDIO_HZ, channels, /*flags*/0, STREAMPROC_PUSH, NULL);
 	RT_ASSERT(bStream != 0, "Failed to initialize basic audio stream.");
+	BASS_ChannelSetAttribute(bStream, BASS_ATTRIB_NOBUFFER, 1);
 	exStream = BASS_StreamCreate(AUDIO_HZ, 4, /*flags*/0, STREAMPROC_PUSH, NULL);
 	RT_ASSERT(exStream != 0, "Failed to initialize expanded audio stream.");
 	dtsStream = BASS_StreamCreate(AUDIO_HZ, 6, BASS_SAMPLE_FLOAT, STREAMPROC_PUSH, NULL);
-	RT_ASSERT(dtsStream != 0, "Failed to initialize DTS 5.1 stream.");
+	RT_ASSERT(dtsStream != 0, "Failed to initialize 5.1 stream.");
 	adjustVolume(0.0);
+	// start channels
+	RT_ASSERT(BASS_ChannelPlay(bStream, TRUE) == TRUE, "Failed to start BASS bStream");
 	RT_ASSERT(BASS_ChannelPlay(exStream, TRUE) == TRUE, "Failed to start BASS exStream");
 	RT_ASSERT(BASS_ChannelPlay(dtsStream, TRUE) == TRUE, "Failed to start BASS dtsStream");
 	// DCA init
@@ -40,6 +46,14 @@ AudioRenderer::AudioRenderer(DeckLinkCapture &capture, unsigned channels) :
 	capture.registerAudioListener(this);
 }
 
+AudioRenderer::~AudioRenderer()
+{
+	BASS_Free();
+
+	dca_free(dcaState);
+	a52_free(a52State);
+}
+
 void AudioRenderer::bufferUnderrunProtection(HSTREAM stream, unsigned streamChannels)
 {
 	unsigned avail = BASS_ChannelGetData(stream, NULL, BASS_DATA_AVAILABLE);
@@ -47,7 +61,7 @@ void AudioRenderer::bufferUnderrunProtection(HSTREAM stream, unsigned streamChan
 									avail, (avail*1000)/(streamChannels*2*AUDIO_HZ)).c_str();
 	while(avail < AUDIO_BUF_UNDERRUN_LIMIT * streamChannels) { // add silence if running out of buffer
 		cout << "---------- " << timeString() << endl;
-		cout << "AUDIO BUFFER UNDERRUN: " << avail << " < " << "(7000 * " << streamChannels << ")\n";
+		cout << "AUDIO BUFFER UNDERRUN: " << avail << " < " << "(" << AUDIO_BUF_UNDERRUN_LIMIT << " * " << streamChannels << ")\n";
 		static void *fillup = NULL;
 		if(fillup == NULL) {
 			fillup = malloc(AUDIO_BUF_UNDERRUN_LIMIT_F*streamChannels);
@@ -68,10 +82,6 @@ void AudioRenderer::packetRecieved(long samples, void* data)
 	if(enableDTS && tryDTS(samples, data)) {
 		bufferUnderrunProtection(dtsStream, 6 * 2 /* float */);
 		return;
-	}
-	if(!playing) {
-		BASS_ChannelPlay(bStream, TRUE);
-		playing = true;
 	}
 	if(boostAudio > 1) {
 		uint16_t *dbuffer = (uint16_t*)data;
@@ -118,6 +128,7 @@ void AudioRenderer::packetRecieved(long samples, void* data)
 			}
 		}
 	}
+	BASS_Update(100);
 }
 
 void AudioRenderer::decodeDTSFrame()

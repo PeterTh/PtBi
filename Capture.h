@@ -140,7 +140,7 @@ public:
 			if(consumeListener) consumeListener->frameRecieved(buffer);
 		}
 
-		if(!disableAudio) {
+		if(!disableAudio && audioPacket) {
 			// audio
 			long frameCount = audioPacket->GetSampleFrameCount();
 			void* audioBuffer;

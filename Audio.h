@@ -29,12 +29,7 @@ class AudioRenderer : public AudioListener {
 
 public:
 	AudioRenderer(DeckLinkCapture &capture, unsigned channels);
-	~AudioRenderer() {
-		BASS_Free();
-
-		dca_free(dcaState);
-		a52_free(a52State);
-	}
+	~AudioRenderer();
 
 	static AudioRenderer& get() {
 		RT_ASSERT(singleton != NULL, "Requested AudioRenderer before initialization");
